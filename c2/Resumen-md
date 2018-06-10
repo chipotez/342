@@ -1,0 +1,14 @@
+cokpit
+
+pcp
+
+pminfo
+
+pmval 
+pmval -s 1 proc.nprocs
+
+pmlogger
+
+pmval -a
+opciones  -s -T -t
+
