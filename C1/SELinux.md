@@ -177,8 +177,28 @@ La herramienta también proporciona análisis de archivo de registro. Mediante e
 Trabajos de laboratorio
 Los trabajos de laboratorio de Red Hat Access, que se pueden encontrar en https://access.redhat.com/labs, proporcionan varias herramientas basadas en la Web para ayudar en la configuración, las implementaciones, la seguridad y la solución de problemas. Esto incluye scripts de prueba para vulnerabilidades de seguridad como Shellshock y Heartbleed, pero también scripts de configuración para clientes y servidores de NFS, analizadores de archivos de registro, una herramienta para ayudar a enviar una revisión de arquitectura para clústeres de alta disponibilidad, y mucho más.
 
+Red Hat Insights
+Red Hat Insights es un servicio de alojamiento que les proporciona a los gerentes y administradores de sistemas una herramienta para ayudarlos a administrar sus sistemas de manera proactiva. Red Hat Insights carga (de manera segura) información clave desde un sistema a Red Hat, donde se analiza y se realiza un conjunto de recomendaciones personalizadas. Estas recomendaciones pueden ayudar a mantener la estabilidad y el funcionamiento de los sistemas, detectando cualquier problema potencial y proporcionando asesoramiento de reparación antes de que se convierta en un problema más grande.
+
+La interfaz web de https://access.redhat.com/insights proporciona una descripción general de todos los posibles problemas que afectan sistemas registrados, ordenados por gravedad y tipo. Los administradores pueden examinar los problemas a fondo para obtener recomendaciones personalizadas. Los administradores también pueden elegir ignorar permanentemente ciertas reglas.
+
+Registro de sistemas con Red Hat Insights
+Registrar sistemas con Red Hat Insights requiere solo dos pasos:
+
+Asegurarse de que el paquete redhat-access-insights está instalado:
 
 
 
 
+REFERENCIAS
+Red Hat Access: Red Hat Support Tool
+https://access.redhat.com/articles/445443
 
+Log Analyzer
+https://access.redhat.com/blogs/759303/posts/880333
+
+CONFIGURING THE RED HAT SUPPORT TOOL
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/sec-configuring_the_red_hat_support_tool
+
+How to provide files to Red Hat Support (vmcore, rhev logcollector, sosreports, heap dumps, log files, etc.)
+https://access.redhat.com/solutions/2112
