@@ -356,3 +356,148 @@ sos_commands/xfs/xfs_logprint_-c.dev.vda1
 Este archivo se generó mediante la opción -k xfs.logprint.
 
 
+
+
+******************************************************
+*                                                    *
+*                    Practica II                     *
+*                     Evaluación                     *
+*                                                    *
+******************************************************
+
+Trabajo de laboratorio: ¿Qué es la solución de problemas?	
+En este trabajo de laboratorio, resolverá un problema con transferencias de FTP en servera.
+
+Recursos
+Máquinas	
+workstation
+
+servera
+
+Resultados
+Deberá poder resolver un problema de transferencia de archivos y conectividad de FTP mediante el método científico.
+
+Prepare sus sistemas para este ejercicio ejecutando el comando lab troubleshootingintro setup en su máquina workstation.
+
+[student@workstation ~]$ lab troubleshootingintro setup
+Uno de sus usuarios informó un problema con el servidor FTP que se ejecuta en servera. El usuario experimenta los siguientes síntomas:
+
+El usuario no puede conectarse desde workstation a través de lftp.
+
+El usuario puede conectarse a localhost a través de lftp cuando se registra en una shell en servera.
+
+Cuando está conectado, el archivo pub/noclip sí se transfiere, pero el archivo pub/getall no.
+
+Para realizar sus pruebas, se ha instalado lftp en workstation y servera. Recuerde que lftp no intentará conectarse hasta que se emita el primer comando.
+
+El daemon del FTP (vsftpd.service) en servera registra todas las transferencias de archivos en /var/log/xferlog. Si el último carácter en una línea de ese archivo es c, la transferencia se completó correctamente; si el último carácter es i, la transferencia no se completó.
+
+Intente recrear el problema.
+
+Intente utilizar lftp desde workstation para conectarse al servicio de FTP que se ejecuta en servera.
+
+[student@workstation ~]$ lftp servera
+lftp servera:~> ls
+'ls' at 0 [Delaying before reconnect: 30]Ctrl+C
+Interrupt
+lftp servera:~> bye
+Intente utilizar lftp desde workstation para conectarse al servicio de FTP que se ejecuta en servera/localhost.
+
+[student@servera ~]$ lftp servera
+lftp servera:~> ls
+drwxr-xr-x    2 0        0             32 Dec 11 09:42 pub
+lftp servera:~> 
+Intente ver el contenido del archivo pub/noclip.
+
+lftp servera:~> cat pub/noclip
+idspispopd
+11 bytes transferred
+lftp servera:~> 
+Intente ver el contenido del archivo pub/getall.
+
+lftp servera:~> cat pub/getall
+cat: Access failed: 550 Failed to open file. (pub/getall)
+lftp servera:~> bye
+Recopile información acerca del servicio de FTP que se ejecuta en servera. Incluya puertos de red, información de firewall, raíz de documentos, permisos de archivos, denegaciones de SELinux, etc.
+
+Recopile información sobre dónde está escuchando vsftpd en la red.
+
+[root@servera ~]# ss -tulpn | grep ftp
+tcp   LISTEN  0  32 :::21   :::*  users:(("vsftpd",pid=30050,fd=3))
+Esto muestra que vsftpd está escuchando en el puerto FTP predeterminado (tcp:21) y acepta las conexiones de todas las direcciones IP.
+
+Vea la configuración de firewall en servera:
+
+[root@servera ~]# firewall-cmd --list-all
+public (default, active)
+  interfaces: eth0 eth1
+  sources:
+  services: dhcpv6-client ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+Esto muestra que el servicio ftp no se abre en el firewall. Esto explica por qué fallaron las conexiones remotas pero funcionaron las conexiones locales. Tome nota de esto.
+
+Consulte el contenido de la raíz del documento de FTP. La ubicación predeterminada es /var/ftp.
+
+[root@servera ~]# ls -lR /var/ftp
+/var/ftp:
+total 0
+drwxr-xr-x. 2 root root 32 Dec 11 10:42 pub
+
+/var/ftp/pub:
+total 8
+-rw-r--r--. 1 root root  6 Dec 11 10:42 getall
+-rw-r--r--. 1 root root 11 Dec 11 10:42 noclip
+Aparentemente, los permisos del archivo son correctos.
+
+Inspeccione en busca de denegaciones de SELinux que hayan ocurrido el último día.
+
+[root@servera ~]# ausearch -m avc -i -ts today
+...
+type=SYSCALL msg=audit(12/11/2015 11:01:01.997:2031) : arch=x86_64 syscall=open success=no exit=-13(Permission denied) a0=0x7f91ba3da4f0 a1=O_RDONLY|O_NONBLOCK a2=0x7f91ba3d9880 a3=0x566a9edd items=0 ppid=30406 pid=30408 auid=unset uid=ftp gid=ftp euid=ftp suid=ftp fsuid=ftp egid=ftp sgid=ftp fsgid=ftp tty=(none) ses=unset comm=vsftpd exe=/usr/sbin/vsftpd subj=system_u:system_r:ftpd_t:s0-s0:c0.c1023 key=(null) 
+type=AVC msg=audit(12/11/2015 11:01:01.997:2031) : avc:  denied  { open } for  pid=30408 comm=vsftpd path=/pub/getall dev="vda1" ino=16828424 scontext=system_u:system_r:ftpd_t:s0-s0:c0.c1023 tcontext=unconfined_u:object_r:tmp_t:s0 tclass=file
+...
+Esto muestra que el archivo /var/ftp/pub/getall tiene un contexto de SELinux de tmp_t. Probablemente esto sea incorrecto.
+
+Formule una hipótesis con respecto a cuáles podrían ser los problemas.
+
+El firewall no se abre para el servicio de FTP, lo que resulta en conexiones fallidas desde máquinas remotas.
+
+El archivo /var/ftp/pub/getall tiene un contexto de SELinux incorrecto, lo que deshabilita el acceso de lectura del daemon del FTP al archivo.
+
+Implemente una solución para todos los problemas encontrados.
+
+Abra el firewall para los servicios de FTP en servera.
+
+[root@servera ~]# firewall-cmd --add-service=ftp
+[root@servera ~]# firewall-cmd --permanent --add-service=ftp
+Reinicie recurrentemente los contextos de SELinux en /var/ftp.
+
+[root@servera ~]# restorecon -Rv /var/ftp
+Compruebe que los problemas informados ahora están resueltos.
+
+Intente utilizar lftp desde workstation para conectarse al servicio de FTP que se ejecuta en servera/localhost.
+
+[student@workstation ~]$ lftp servera
+lftp servera:~> ls
+drwxr-xr-x    2 0        0             32 Dec 11 09:42 pub
+lftp servera:~> 
+Intente ver el contenido del archivo pub/noclip.
+
+lftp servera:~> cat pub/noclip
+idspispopd
+11 bytes transferred
+lftp servera:~> 
+Intente ver el contenido del archivo pub/getall.
+
+lftp servera:~> cat pub/getall
+idkfa
+6 bytes transferred
+lftp servera:~> bye
+Evalúe su trabajo ejecutando el comando lab troubleshootingintro grade desde workstation.
+
+[student@workstation ~]$ lab troubleshootingintro grade
+Reinicie todas sus máquinas para proveer un entorno limpio para los siguientes ejercicios
