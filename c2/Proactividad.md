@@ -203,6 +203,106 @@ Nagios es un sistema modular que consta de un paquete nagios central y funcional
 Hay una interfaz web en el servidor principal de Nagios que puede utilizarse para configurar pruebas y ajustes para Nagios o para los hosts que está monitoreando. Los administradores pueden establecer umbrales para los indicadores de rendimiento del sistema monitoreado para que Nagios genere alertas cuando estas métricas de rendimiento queden fuera de los rangos operativos normales
 
 
+***************************************************************
+*                                                             *
+*                         Practica I                          *
+*                                                             *
+***************************************************************
+Ejercicio guiado: Monitoreo de sistemas	
+En este trabajo de laboratorio, monitoreará el rendimiento del sistema actual e histórico a través de Performance Co-Pilot.
+
+Recursos
+Archivos	/root/cpuidle
+Máquinas	
+servera
+
+Resultados
+Deberá poder mostrar los indicadores de rendimiento actuales e históricos en un sistema a través de Performance Co-Pilot.
+
+Inicie sesión en servera como el usuario root.
+
+En este ejercicio, instalará y configurará el software de Performance Co-Pilot en servera. Utilizará las utilidades proporcionadas por el software para recopilar estadísticas de rendimiento actuales del sistema. También aprovechará la función de archivo del software y recuperará estadísticas de rendimiento históricas.
+
+Instale el software Performance Co-Pilot en servera al instalar el paquete pcp.
+
+[root@servera ~]# yum install -y pcp
+Inicie y habilite el servicio pmcd para habilitar la recopilación de métricas de rendimiento.
+
+[root@servera ~]# systemctl start pmcd
+[root@servera ~]# systemctl enable pmcd
+Created symlink from /etc/systemd/system/multi-user.target.wants/pmcd.service to /usr/lib/systemd/system/pmcd.service.
+[root@servera ~]# systemctl status pmcd
+● pmcd.service - Performance Metrics Collector Daemon
+   Loaded: loaded (/usr/lib/systemd/system/pmcd.service; enabled; vendor preset: disabled)
+   Active: active (exited) since Fri 2015-12-11 08:26:38 EST; 8s ago
+     Docs: man:pmcd(8)
+ Main PID: 1896 (code=exited, status=0/SUCCESS)
+   CGroup: /system.slice/pmcd.service
+           ├─1942 /usr/libexec/pcp/bin/pmcd
+           ├─1945 /var/lib/pcp/pmdas/root/pmdaroot
+           ├─1946 /var/lib/pcp/pmdas/proc/pmdaproc -d 3
+           ├─1947 /var/lib/pcp/pmdas/xfs/pmdaxfs -d 11
+           └─1948 /var/lib/pcp/pmdas/linux/pmdalinux
+
+Dec 14 08:26:38 servera.lab.example.com systemd[1]: Starting Performance Metrics Collector Daemon...
+Dec 14 08:26:38 servera.lab.example.com pmcd[1896]: Starting pmcd ...
+Dec 14 08:26:38 servera.lab.example.com systemd[1]: Started Performance Metrics Collector Daemon.
+Inicie y habilite el servicio pmlogger para configurar el registro persistente de métricas.
+
+[root@servera ~]# systemctl start pmlogger
+[root@servera ~]# systemctl enable pmlogger
+Created symlink from /etc/systemd/system/multi-user.target.wants/pmlogger.service to /usr/lib/systemd/system/pmlogger.service.
+[root@servera ~]# systemctl status pmlogger
+● pmlogger.service - Performance Metrics Archive Logger
+   Loaded: loaded (/usr/lib/systemd/system/pmlogger.service; enabled; vendor preset: disabled)
+   Active: active (exited) since Fri 2015-12-11 08:28:38 EST; 6s ago
+     Docs: man:pmlogger(1)
+ Main PID: 2535 (code=exited, status=0/SUCCESS)
+   CGroup: /system.slice/pmlogger.service
+           └─6489 /usr/libexec/pcp/bin/pmlogger -P -r -T24h10m -c config.default -m pmlogger_check 20151211.08.28
+
+Dec 14 08:28:38 servera.lab.example.com systemd[1]: Starting Performance Metrics Archive Logger...
+Dec 14 08:28:38 servera.lab.example.com pmlogger[2535]: /usr/share/pcp/lib/pmlogger: Warning: Performance Co-Pilot archive ...bled.
+Dec 14 08:28:38 servera.lab.example.com pmlogger[2535]: To enable pmlogger, run the following as root:
+Dec 14 08:28:38 servera.lab.example.com pmlogger[2535]: # /usr/bin/systemctl enable pmlogger.service
+Dec 14 08:28:38 servera.lab.example.com pmlogger[2535]: Starting pmlogger ...
+Dec 14 08:28:38 servera.lab.example.com systemd[1]: Started Performance Metrics Archive Logger.
+Hint: Some lines were ellipsized, use -l to show in full.
+Consulte el daemon pmcd para mostrar el tiempo de inactividad por CPU para un minuto.
+
+[root@servera ~]# pmval -T 1minute kernel.percpu.cpu.idle
+metric:    kernel.percpu.cpu.idle
+host:      servera.lab.example.com
+semantics: cumulative counter (converting to rate)
+units:     millisec (converting to time utilization)
+samples:   61
+interval:  1.00 sec
+
+              cpu0                  cpu1    
+               0.9997                0.9997 
+               0.9997                0.9997 
+... Output omitted ...
+Recupere la ubicación del registro de archivos en el que el proceso pmlogger principal está escribiendo.
+
+[root@servera ~]# pcp | grep 'primary logger'
+ pmlogger: primary logger: /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28
+A través del resultado del comando anterior, determine la iteración más reciente del registro de archivos al examinar los datos de fecha y hora contenidos en el nombre del archivo.
+
+[root@servera ~]# ls -1 /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.[0-9]* | tail -1
+/var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.0
+Use el comando pmval para obtener estadísticas históricas del tiempo de inactividad por CPU en intervalos de un minuto desde el registro de archivo más reciente. Guarde el resultado en el archivo /root/cpuidle.
+
+[root@servera ~]# pmval -t1minute kernel.percpu.cpu.idle -a /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.0 > /root/cpuidle
+
+pmval: pmFetch: End of PCP archive log
+Evalúe su trabajo y, luego, realice una limpieza en sus sistemas para el próximo ejercicio.
+
+Evalúe su trabajo.
+
+[student@workstation ~]$ lab pcp grade
+Realice una limpieza en sus sistemas para el próximo ejercicio.
+
+[student@workstation ~]$ lab pcp reset
 
 
 ===============================================================
@@ -228,3 +328,25 @@ Hay una interfaz web en el servidor principal de Nagios que puede utilizarse par
 =                   Monitoreo de Sistema                      =
 =                                                             =
 ===============================================================
+
+
+===============================================================
+=                                                             =
+=                         Referencias                         =
+=                                                             =
+=                                                             =
+===============================================================
+
+Seccion I
+
+Para obtener más información acerca de Cockpit, consulte Proyecto de Cockpit
+https://cockpit-project.org/
+
+Para obtener más información acerca de Performance Co-Pilot, consulte las páginas del manual pmstat(1), pmatop(1), pminfo(1), pmval(1) y PCPIntro(1).
+
+Para obtener más información acerca de Nagios, consulte Proyecto de Nagios
+https://www.nagios.org/
+
+
+
+
