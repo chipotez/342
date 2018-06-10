@@ -1,14 +1,56 @@
-cokpit
 
-pcp
+===============================================================                                                             =
+=                         SeccionI                            =
+=          Ejercicio guiado: cokpit                           =
+=                                                             =
+===============================================================
 
-pminfo
 
-pmval 
-pmval -s 1 proc.nprocs
 
-pmlogger
+===============================================================                                                             =
+=                         SeccionI                            =
+=          Ejercicio guiado: Monitoreo de sistemas            =
+=                                                             =
+===============================================================
 
-pmval -a
-opciones  -s -T -t
+En este trabajo de laboratorio, monitoreará el rendimiento del sistema actual e histórico a través de Performance Co-Pilot.
 
+Recursos
+Archivos	/root/cpuidle
+Máquinas servera
+
+Deberá poder mostrar los indicadores de rendimiento actuales e históricos en un sistema a través de Performance Co-Pilot.
+
+Inicie sesión en servera como el usuario root.
+
+En este ejercicio, instalará y configurará el software de Performance Co-Pilot en servera. 
+Utilizará las utilidades proporcionadas por el software para recopilar estadísticas
+de rendimiento actuales del sistema. También aprovechará la función de archivo del software y 
+recuperará estadísticas de rendimiento históricas.
+
+
+Instale el software Performance Co-Pilot en servera al instalar el paquete pcp.
+
+[root@servera ~]# yum install -y pcp
+Inicie y habilite el servicio pmcd para habilitar la recopilación de métricas de rendimiento.
+
+[root@servera ~]# systemctl start pmcd
+[root@servera ~]# systemctl enable pmcd
+[root@servera ~]# systemctl status pmcd
+[root@servera ~]# systemctl start pmlogger
+[root@servera ~]# systemctl enable pmlogger
+[root@servera ~]# systemctl status pmlogger
+
+Consulte el daemon pmcd para mostrar el tiempo de inactividad por CPU para un minuto.
+[root@servera ~]# pmval -T 1minute kernel.percpu.cpu.idle
+
+Recupere la ubicación del registro de archivos en el que el proceso pmlogger principal está escribiendo.
+[root@servera ~]# pcp | grep 'primary logger'
+ pmlogger: primary logger: /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28
+
+A través del resultado del comando anterior, determine la iteración más reciente del registro de archivos al examinar los datos de fecha y hora contenidos en el nombre del archivo.
+[root@servera ~]# ls -1 /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.[0-9]* | tail -1
+/var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.0
+
+Use el comando pmval para obtener estadísticas históricas del tiempo de inactividad por CPU en intervalos de un minuto desde el registro de archivo más reciente. Guarde el resultado en el archivo /root/cpuidle.
+[root@servera ~]# pmval -t1minute kernel.percpu.cpu.idle -a /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.0 > /root/cpuidle
