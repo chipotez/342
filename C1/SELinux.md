@@ -501,3 +501,18 @@ Evalúe su trabajo ejecutando el comando lab troubleshootingintro grade desde wo
 
 [student@workstation ~]$ lab troubleshootingintro grade
 Reinicie todas sus máquinas para proveer un entorno limpio para los siguientes ejercicios
+
+Resumen	
+En este capítulo, aprendió lo siguiente:
+
+Cómo aplicar el método científico en la solución de problemas.
+
+Cómo utilizar journalctl para leer registros del sistema.
+
+Cómo configurar un diario (journal) del sistema persistente.
+
+Cómo utilizar redhat-support-tool.
+
+Cómo utilizar sosreport.
+
+Cómo configurar Red Hat Insights.
