@@ -105,7 +105,13 @@ Defina el problema. Indique el problema y los síntomas con claridad. Sea lo má
 
 Reúna información básica. ¿Qué producto y versión se ven afectados? Esté preparado para brindar información de diagnóstico relevante. Esto puede incluir el resultado de sosreport, que se abordó anteriormente en esta sección. En el caso de problemas del kernel, dicha información podría incluir un vuelco de errores de kdump del sistema o una fotografía digital del seguimiento de kernel mostrado en el monitor de un sistema bloqueado.
 
+Determine el nivel de gravedad. Red Hat utiliza cuatro niveles de gravedad para clasificar los problemas. Después de los informes de problemas con gravedad urgente y alta, debe realizarse una llamada telefónica al centro de asistencia local pertinente (visite https://access.redhat.com/site/support/contact/technicalSupport).
 
+Gravedad	Descripción
+Urgente (Gravedad 1)	Un problema que afecta gravemente al uso del software en un entorno de producción (como la pérdida de datos de producción o la parada de los sistemas de producción). La situación interrumpe las operaciones empresariales y no existe un procedimiento de resolución.
+Alta (Gravedad 2)	Un problema donde el software funciona, pero el uso en un entorno de producción se ve gravemente reducido. La situación tiene un gran impacto en parte de las operaciones empresariales y no existe un procedimiento de resolución.
+Media (Gravedad 3)	Un problema que implica una pérdida parcial no fundamental de la capacidad de uso del software en un entorno de producción o desarrollo. Para los entornos de producción, hay un impacto de mediano a bajo en el negocio, pero el negocio sigue funcionando, incluso mediante el uso de una solución de proceso. Para entornos de desarrollo, donde la situación está causando que el proyecto continúe o no migre a la producción.
+Baja (Gravedad 4)	Un asunto de uso general, la comunicación de un error de documentación o una recomendación para una mejora o modificación futura del producto. Para entornos de producción, el impacto en su negocio, en el rendimiento o en la funcionalidad del sistema es de bajo a cero. Para los entornos de desarrollo, hay un impacto de mediano a bajo en el negocio, pero el negocio sigue funcionando, incluso mediante el uso de una solución de proceso.
 
 
 
