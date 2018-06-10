@@ -48,6 +48,63 @@ La herramienta redhat-support-tool permite que los suscriptores busquen y muestr
 
 A continuación se incluye una demostración de búsqueda básica y configuración inicial:
 
+[student@demo ~]$ redhat-support-tool
+Welcome to the Red Hat Support Tool.
+Command (? for help): search How to manage system entitlements with subscription-manager
+Please enter your RHN user ID: subscriber
+Save the user ID in /home/student/.redhat-support-tool/redhat-support-tool.conf (y/n): y
+Please enter the password for subscriber: password
+Save the password for subscriber in /home/student/.redhat-support-tool/redhat-support-tool.conf (y/n): y
+La herramienta, tras solicitarle al usuario la configuración de usuario requerida, continúa con la solicitud de búsqueda original.
+
+Type the number of the solution to view or 'e' to return to the previous menu.
+  1 [ 253273:VER] How to register and subscribe a system to Red Hat Network
+    (RHN) using Red Hat Subscription Manager (RHSM)?
+  2 [  17397:VER] What are Flex Guest Entitlements in Red Hat Network?
+  3 [ 232863:VER] How to register machines and manage subscriptions using Red
+    Hat Subscription Manager through an invisible HTTP proxy / Firewall?
+3 of 43 solutions displayed. Type 'm' to see more, 'r' to start from the beginning again, or '?' for help with the codes displayed in the above output.
+Select a Solution: 
+Pueden seleccionarse secciones específicas de documentos de soluciones para su visualización.
+
+Select a Solution: 1
+
+Type the number of the section to view or 'e' to return to the previous menu.
+ 1 Title
+ 2 Issue
+ 3 Environment
+ 4 Resolution
+ 5 Display all sections
+End of options.
+Section: 1
+
+Title
+===============================================================================
+How to register and subscribe a system to Red Hat Network (RHN) using Red Hat Subscription Manager (RHSM)?
+URL:        https://access.redhat.com/site/solutions/253273
+(END) q
+Acceso directo a artículos de la base de conocimientos por ID de documento
+Encuentre artículos en línea en forma directa con el comando kb de la herramienta con la ID de documento de la base de conocimientos. Los documentos arrojados pasan por la pantalla sin paginación, lo que le permite al usuario redirigir el resultado obtenido mediante el uso de otros comandos locales. En este ejemplo, se puede ver el documento con el comando less.
+
+[student@demo ~]$ redhat-support-tool kb 253273 | less
+
+Title:   How to register and subscribe a system to Red Hat Network (RHN) using Red Hat Subscription Manager (RHSM)?
+ID:      253273                                                      
+State:   Verified: This solution has been verified to work by Red Hat Customers and Support Engineers for the specified product version(s).
+URL:     https://access.redhat.com/site/solutions/253273             
+: q
+Los documentos arrojados en formato sin paginar pueden enviarse fácilmente a una impresora, convertirse a PDF o a otro formato de documento, o redirigirse a un programa de entrada de datos para seguimiento de incidentes o sistema de administración de cambios, mediante el uso de otras utilidades instaladas y disponibles en Red Hat Enterprise Linux.
+
+Uso de redhat-support-tool para administrar casos de asistencia
+Un beneficio de la suscripción a un producto es el acceso a asistencia técnica a través del portal de clientes de Red Hat. Según el nivel de soporte de suscripción del sistema, Red Hat puede comunicarse mediante herramientas en línea o por teléfono. Consulte https://access.redhat.com/site/support/policy/support_process para obtener enlaces a información detallada acerca del proceso de soporte.
+
+Preparación de un informe de error
+Antes de comunicarse con la asistencia de Red Hat, reúna información relevante para un informe de errores.
+
+Defina el problema. Indique el problema y los síntomas con claridad. Sea lo más específico posible. Detalle los pasos que reproducirían el problema.
+
+Reúna información básica. ¿Qué producto y versión se ven afectados? Esté preparado para brindar información de diagnóstico relevante. Esto puede incluir el resultado de sosreport, que se abordó anteriormente en esta sección. En el caso de problemas del kernel, dicha información podría incluir un vuelco de errores de kdump del sistema o una fotografía digital del seguimiento de kernel mostrado en el monitor de un sistema bloqueado.
+
 
 
 
