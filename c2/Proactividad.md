@@ -347,6 +347,20 @@ Para obtener más información acerca de Performance Co-Pilot, consulte las pág
 Para obtener más información acerca de Nagios, consulte Proyecto de Nagios
 https://www.nagios.org/
 
+Performance Analysis with Performance Co-Pilot (PCP)
+https://www.redhat.com/en/blog/performance-analysis-performance-co-pilot-pcp
 
+Getting Started: Using Performance Co-Pilot and Vector for Browser Based Metric Visualizations
+https://rhelblog.redhat.com/2015/12/18/getting-started-using-performance-co-pilot-and-vector-for-browser-based-metric-visualizations/
 
+Performance Co-Pilot
+https://pcp.io/
 
+Side-by-side comparison of PCP tools with legacy tools
+https://access.redhat.com/articles/2372811
+
+Performance Analysis with PCP 
+https://events.static.linuxfound.org/sites/events/files/slides/Paul_Evans_PCP_R.pdf
+
+User's and Administrator's Guide
+https://pcp.io/books/PCP_UAG/html-single/
