@@ -11,6 +11,7 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/se
 
 https://wiki.gentoo.org/wiki/SELinux/Tutorials/Where_to_find_SELinux_permission_denial_details
 
+https://wiki.centos.org/es/HowTos/SELinux
 **Recopilación de información con sosreport
 
 Red Hat incluye una herramienta llamada sosreport en el paquete sos. Esta herramienta puede recopilar varios fragmentos de información del sistema, incluidos archivos de registro y archivos de configuración, y agruparlos en un tarball listo para enviarse al Soporte de Red Hat.
