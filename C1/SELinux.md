@@ -187,6 +187,28 @@ Registrar sistemas con Red Hat Insights requiere solo dos pasos:
 
 Asegurarse de que el paquete redhat-access-insights está instalado:
 
+[root@demo ~]# 
+          
+            yum -y install redhat-access-insights
+          
+        
+Registrar el sistema con Red Hat Insights.
+
+[root@demo ~]# redhat-access-insights --register
+Successfully registered demo.lab.example.com
+
+Attempting to download collection rules
+Attempting to download collection rules GPG signature from https://cert-api.access.redhat.com/r/insights/v1/static/uploader.json.asc
+Successfully downloaded GPG signature
+Verifying GPG signature of Insights configuration
+Starting to collect Insights data
+Uploading Insights data, this may take a few minutes
+Upload completed successfully
+Inmediatamente después de registrar un sistema, los datos de Insights se ponen a disposición en la interfaz web.
+
+
+
+
 
 
 
@@ -202,3 +224,135 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/de
 
 How to provide files to Red Hat Support (vmcore, rhev logcollector, sosreports, heap dumps, log files, etc.)
 https://access.redhat.com/solutions/2112
+
+
+References
+sosreport(1) man page
+
+Red Hat Access: Red Hat Support Tool
+https://access.redhat.com/articles/445443
+
+Red Hat Support Tool First Use
+https://access.redhat.com/videos/534293
+
+Contacting Red Hat Technical Support
+https://access.redhat.com/support/policy/support_process/
+
+Help - Red Hat Customer Portal
+https://access.redhat.com/help/
+
+Red Hat Access Labs
+https://access.redhat.com/labs/
+
+Red Hat Insights
+https://access.redhat.com/insights
+
+
+
+
+******************************************************
+*                                                    *
+*                    Practica I                      *
+*                                                    *
+******************************************************
+
+Ejercicio guiado: Uso de los recursos de Red Hat	
+En este trabajo de laboratorio, generará e inspeccionará un sosreport en su sistema servera.
+
+Recursos
+Máquinas	
+workstation
+
+servera
+
+Resultados
+Deberá poder generar un sosreport para ayudar al Soporte de Red Hat a resolver un problema.
+
+Mientras resolvía un problema en su sistema servera, contactó al Soporte de Red Hat para obtener ayuda. El soporte ha solicitado que genere un sosreport con el módulo xfs activo y la opción xfs.logprint habilitada.
+
+A fines de este ejercicio, su nombre es "student" y su número de caso es 123456.
+
+Compruebe que tiene el paquete sos instalado en su sistema servera. En caso de no tenerlo, instálelo.
+
+Compruebe que tiene el paquete sos instalado en su sistema servera.
+
+[root@servera ~]# rpm -q sos
+sos-3.2-35.el7.noarch
+Si el comando anterior devolvió package sos is not installed (el paquete sos no está instalado), instale el paquete sos.
+
+[root@servera ~]# yum -y install sos
+Vea las opciones, los complementos y las opciones de complementos disponibles para sosreport.
+
+Vea las opciones disponibles para sosreport.
+
+[root@servera ~]# sosreport --help | less
+Vea los complementos y las opciones de complementos disponibles para sosreport.
+
+[root@servera ~]# sosreport -l | less
+Genere un sosreport en servera. Asegúrese de incluir la opción xfs.logprint.
+
+Ejecute la herramienta sosreport con la opción -k xfs.logprint. Use los avisos interactivos para ingresar toda la información requerida. Este proceso puede tardar un tiempo en completarse.
+
+[root@servera ~]# sosreport -k xfs.logprint
+sosreport (version 3.2)
+
+This command will collect diagnostic and configuration information from
+this Red Hat Enterprise Linux system and installed applications.
+
+An archive containing the collected information will be generated in
+/var/tmp and may be provided to a Red Hat support representative.
+
+Any information provided to Red Hat will be treated in accordance with
+the published support policies at:
+
+  https://access.redhat.com/support/
+
+The generated archive may contain data considered sensitive and its
+content should be reviewed by the originating organization before being
+passed to any third party.
+
+No changes will be made to system configuration.
+
+Press ENTER to continue, or CTRL-C to quit. Enter
+Please enter your first initial and last name [servera.lab.example.com]: student
+Please enter the case id that you are generating this report for []: 123456
+
+ Setting up archive ...
+ Setting up plugins ...
+ Running plugins. Please wait ...
+
+  Running 1/82: abrt...        
+  Running 2/82: acpid...        
+...
+  Running 81/82: xfs...        
+  Running 82/82: yum...        
+
+Creating compressed archive...
+
+Your sosreport has been generated and saved in:
+  /var/tmp/sosreport-student.123456-20151210132339.tar.xz
+
+The checksum is: d0459a202c5c456be00a3dac7b92567a
+
+Please send this file to your support representative.
+Copie el archivo generado al directorio de inicio para student en workstation, y extráigalo.
+
+Copie el archivo generado al directorio de inicio para student en workstation.
+
+[student@workstation ~]$ scp root@servera:/var/tmp/sosreport-student.123456*.tar.xz .
+Extraiga el archivo generado. Puede ignorar de manera segura los errores relacionados a la creación de los nodos del dispositivo.
+
+[student@workstation ~]$ tar xvf sosreport-student.123456*.tar.xz
+Inspeccione el sosreport extraído. Algunos archivos de interés:
+
+etc/
+
+sos_commands/
+
+sos_reports/sos.html
+
+sos_commands/xfs/xfs_logprint_-c.dev.vda1
+
+Este archivo se generó mediante la opción -k xfs.logprint.
+
+
