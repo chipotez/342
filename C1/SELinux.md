@@ -113,5 +113,72 @@ Alta (Gravedad 2)	Un problema donde el software funciona, pero el uso en un ento
 Media (Gravedad 3)	Un problema que implica una pérdida parcial no fundamental de la capacidad de uso del software en un entorno de producción o desarrollo. Para los entornos de producción, hay un impacto de mediano a bajo en el negocio, pero el negocio sigue funcionando, incluso mediante el uso de una solución de proceso. Para entornos de desarrollo, donde la situación está causando que el proyecto continúe o no migre a la producción.
 Baja (Gravedad 4)	Un asunto de uso general, la comunicación de un error de documentación o una recomendación para una mejora o modificación futura del producto. Para entornos de producción, el impacto en su negocio, en el rendimiento o en la funcionalidad del sistema es de bajo a cero. Para los entornos de desarrollo, hay un impacto de mediano a bajo en el negocio, pero el negocio sigue funcionando, incluso mediante el uso de una solución de proceso.
 
+Administración de un informe de errores con redhat-support-tool
+Los suscriptores pueden crear, ver, modificar y cerrar casos de asistencia de Red Hat Support mediante el uso de redhat-support-tool. Cuando se abren y se mantienen casos de asistencia, los usuarios pueden incluir archivos o documentación, como informes de diagnóstico (sosreport). La herramienta carga y adjunta archivos a casos en línea. Los detalles del caso, como producto, versión, resumen, descripción, gravedad y grupo de caso, pueden asignarse con opciones de comandos o si se deja la solicitud de la herramienta de información necesaria. En el siguiente ejemplo, se especifican las opciones --product y --version, pero redhat-support-tool proporcionará una lista de elecciones para esas opciones si el comando opencase no las especificó.
+
+[student@demo ~]$ redhat-support-tool
+Welcome to the Red Hat Support Tool.
+Command (? for help): opencase --product="Red Hat Enterprise Linux" --version="7.0"
+Please enter a summary (or 'q' to exit): System fails to run without power
+Please enter a description (Ctrl-D on an empty line when complete):
+When the server is unplugged, the operating system fails to continue.
+ 1   Low                                                                        
+ 2   Normal                                                                     
+ 3   High                                                                       
+ 4   Urgent                                                                     
+Please select a severity (or 'q' to exit): 4
+Would you like to assign a case group to this case (y/N)? N
+Would see if there is a solution to this problem before opening a support case? (y/N) N
+-------------------------------------------------------------------------------
+Support case 01034421 has successfully been opened.
+Inclusión de información de diagnóstico con el archivo de informe de SoS adjunto
+La inclusión de información de diagnóstico cuando un caso de asistencia se crea por primera vez contribuye a una resolución más rápida del problema. El comando sosreport genera un archivo tar comprimido de información de diagnóstico reunida del sistema en ejecución. La herramienta redhat-support-tool le pide que incluya uno en caso de que un archivo se haya creado previamente:
+
+Please attach a SoS report to support case 01034421. Create a SoS report as
+the root user and execute the following command to attach the SoS report
+directly to the case:
+ redhat-support-tool addattachment -c 01034421 path to sosreport
+
+Would you like to attach a file to 01034421 at this time? (y/N) N
+Command (? for help): 
+Si todavía no hay un informe SoS actual preparado, un administrador puede generar y adjuntar uno más tarde con el comando addattachment de la herramienta, como se recomendó anteriormente.
+
+Usted puede ver, modificar y cerrar los casos de asistencia como suscriptor:
+
+Command (? for help): listcases
+
+Type the number of the case to view or 'e' to return to the previous menu.
+ 1 [Waiting on Red Hat]  System fails to run without power
+No more cases to display
+Select a Case: 1
+
+Type the number of the section to view or 'e' to return to the previous menu.
+ 1 Case Details
+ 2 Modify Case
+ 3 Description
+ 4 Recommendations
+ 5 Get Attachment
+ 6 Add Attachment
+ 7 Add Comment
+End of options.
+Option: q
+
+Select a Case: q
+
+Command (? for help):q
+
+[student@demo ~]$ redhat-support-tool modifycase --status=Closed 01034421
+Successfully updated case 01034421
+[student@demo ~]$
+La herramienta Red Hat Support cuenta con capacidades avanzadas de análisis y diagnóstico de aplicaciones. Mediante el uso de los archivos principales del vuelco de errores de kernel, redhat-support-tool puede crear y extraer un seguimiento, un informe de tramas de pila activas en el momento en que se realiza un vuelco de errores, para proporcionar diagnóstico in situ y abrir un caso de asistencia.
+
+La herramienta también proporciona análisis de archivo de registro. Mediante el uso del comando analyze de la herramienta, los archivos de registro de muchos tipos, como de sistema operativo, JBoss, Python, Tomcat, oVirt, etc., pueden analizarse para reconocer síntomas de problemas que pueden verse y diagnosticarse de manera individual. Proporcionar análisis preprocesado, en oposición a datos sin procesar, como archivos de registro o vuelcos de errores, permite que se abran los casos de asistencia y que se pongan a disposición de ingenieros más rápidamente.
+
+Trabajos de laboratorio
+Los trabajos de laboratorio de Red Hat Access, que se pueden encontrar en https://access.redhat.com/labs, proporcionan varias herramientas basadas en la Web para ayudar en la configuración, las implementaciones, la seguridad y la solución de problemas. Esto incluye scripts de prueba para vulnerabilidades de seguridad como Shellshock y Heartbleed, pero también scripts de configuración para clientes y servidores de NFS, analizadores de archivos de registro, una herramienta para ayudar a enviar una revisión de arquitectura para clústeres de alta disponibilidad, y mucho más.
+
+
+
+
 
 
