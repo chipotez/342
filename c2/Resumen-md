@@ -54,3 +54,85 @@ A través del resultado del comando anterior, determine la iteración más recie
 
 Use el comando pmval para obtener estadísticas históricas del tiempo de inactividad por CPU en intervalos de un minuto desde el registro de archivo más reciente. Guarde el resultado en el archivo /root/cpuidle.
 [root@servera ~]# pmval -t1minute kernel.percpu.cpu.idle -a /var/log/pcp/pmlogger/servera.lab.example.com/20151211.08.28.0 > /root/cpuidle
+
+===============================================================                                                             =
+=                         SeccionII                           =
+=     Ejercicio : Configuracion de Registros Remotos          =
+=                                                             =
+===============================================================
+===============================================================
+===============================================================
+===============================================================
+
+
+Configurará el registro de logs en un host de registro central.
+
+Archivos	
+/etc/rsyslog.conf
+/etc/logrotate.d/syslog
+
+Máquinas	
+servera
+serverb
+
+Resultados
+Deberá poder centralizar el registro de sistemas remotos en un host de registro central.
+
+
+En servera
+Configure el servicio rsyslog para que funcione como un host de registro central. 
+Configure el host para aceptar la entrega de mensajes de hosts remotos a través de TCP.
+Cree una nueva regla que escriba los mensajes de syslog por cada host en subdirectorios separados en /var/log/loghost. 
+Los subdirectorios recibirán el nombre de host de cada host. 
+Dentro del subdirectorio de cada host, se conservará un archivo de registro separado para los mensajes de cada instalación de syslog. 
+Para un mejor rendimiento, configure el registro para que no se realice una sincronización después de que se registra cada mensaje. 
+Configure la rotación de registros para los nuevos archivos de registro.
+
+Configure serverb para el registro remoto del host de registro central. 
+Pruebe la configuración al generar un mensaje de prueba y verificar su presencia en el registro adecuado en servera.
+
+1 .- Verifique que el servicio rsyslog esté en ejecución y habilitado para iniciarse en el arranque.
+[root@servera ~]# systemctl is-active rsyslog
+[root@servera ~]# systemctl is-enabled rsyslog
+
+2 .- Habilite la recepción de syslog TCP en /etc/rsyslog.conf al quitar los comentarios de las siguientes líneas.
+$ModLoad imtcp
+$InputTCPServerRun 514
+
+3 .- En la sección "#### RULES ####", crear regla para los nombres de archivos de registro dinámicos y, luego, 
+cree una regla para usar el nombre de archivo dinámico para separar los mensajes de registro por nombre de host e instalación.
+
+$template DynamicFile,"/var/log/loghost/%HOSTNAME%/%syslogfacility-text%.log"
+*.* -?DynamicFile
+
+
+4 .- Reinicie el servicio rsyslog para que se apliquen los cambios de configuración.
+[root@servera ~]# systemctl restart rsyslog
+
+5 .- Agregue la siguiente entrada a la lista de archivos en el archivo de configuración /etc/logrotate.d/syslog para que 
+se coloquen los nuevos archivos de registro en el programa de rotación de registros.
+/var/log/loghost/*/*.log
+
+6 .- Habilite el tráfico entrante en el puerto TCP 514.
+[root@servera ~]# firewall-cmd --add-port=514/tcp --permanent
+[root@servera ~]# firewall-cmd --reload
+
+En serverb
+1 .- A gregue la siguiente regla a /etc/rsyslog.conf para que todos los mensajes de syslog se entreguen de manera remota a servera a través de TCP en el puerto 514.
+*.* @@servera.lab.example.com:514
+
+2 .- Reinicie el servicio rsyslog para que se apliquen los cambios de configuración de serverb.
+[root@serverb ~]# systemctl restart rsyslog
+
+3 .- G enere un par de mensajes de syslog con diferentes instalaciones.
+
+[root@serverb ~]# logger -p user.info "Test user.info message from serverb"
+[root@serverb ~]# logger -p authpriv.crit "Test authpriv.crit message from serverb"
+
+En servera 
+1 .- Verifique que el mensaje de syslog aparezca en los archivos adecuados de /var/log/loghost/serverb.
+
+[root@servera ~]# grep 'user\.info' /var/log/loghost/serverb/user.log
+[root@servera ~]# grep 'authpriv\.crit' /var/log/loghost/serverb/authpriv.log
+
+
