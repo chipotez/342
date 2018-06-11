@@ -312,11 +312,105 @@ Realice una limpieza en sus sistemas para el próximo ejercicio.
 =                                                             =
 ===============================================================
 
+Registro remoto
+La configuración estándar de la gestión de registros del sistema rota archivos de registro todas las semanas y los conserva durante cuatro rotaciones. A veces se desea mantener registros durante más de cuatro semanas (que es el valor predeterminado), especialmente cuando establece tendencias de rendimiento del sistema relacionadas con tareas, como cierres financieros al final del mes, que se ejecutan solo una vez por mes. Al enviar mensajes de registro a un host de registro remoto con un almacenamiento masivo especializado, los administradores pueden conservar grandes archivos de registros del sistema para sus sistemas sin cambiar la configuración predeterminada de rotación de registros, que tiene como intención evitar que los registros consuman almacenamiento en disco de manera excesiva.
+
+La recopilación central de los mensajes de registro del sistema también puede ser muy útil para monitorear el estado de los sistemas e identificar rápidamente los problemas. Además, proporciona una ubicación de copia de seguridad para los mensajes de registro en caso de que el sistema tenga un error grave en el disco duro u otros problemas, que hacen que los registros locales no estén disponibles. En estas situaciones, la copia de mensajes de registro que residen en el host de registro central puede utilizarse para ayudar a diagnosticar el error que causó el problema.
+
+El registro estandarizado de sistemas es implementado en Red Hat Enterprise Linux 7 por el servicio rsyslog. Los programas del sistema pueden enviar mensajes de syslog al servicio rsyslogd local que, a su vez, redireccionará esos mensajes a los archivos que están en /var/log, servidores de registro remotos u otras bases de datos, según los parámetros que estén en su archivo de configuración, /etc/rsyslog.conf.
+
+Los mensajes de registro tienen dos características que se usan para clasificarlos. La utilidad (facility) de un mensaje de registro indica qué tipo de mensaje es. La prioridad (priority), por otra parte, indica la importancia del evento registrado en el mensaje.
+
+Tabla 2.1. Niveles de prioridad de syslog
+
+Prioridad (Priority)	Significado
+emerg	El sistema no se puede usar.
+alert	Se requiere acción inmediata.
+crit	Condiciones críticas.
+err	Condiciones de error.
+warning	Advertencia.
+notice	Condiciones normales, pero importantes.
+info	Mensajes informativos
+debug	Mensajes de depuración.
+Configuración de un host de registro central
+La implementación de un host de registro central requiere la configuración del servicio rsyslog en dos tipos de sistemas: los sistemas remotos desde donde se originan los mensajes de registro y el host de registro central que recibe los mensajes. En el host de registro central, el servicio rsyslog debe configurarse para que se acepten los mensajes de registro de hosts remotos.
+
+Para configurar el servicio rsyslog en el host de registro central para que acepte registros remotos, quite los comentarios de las líneas de recepción TCP o UDP en la sección de módulos en el archivo /etc/rsyslog.conf.
+
+Para la recepción UDP:
+
+# Provides UDP syslog reception
+$ModLoad imudp.so
+$UDPServerRun 514
+o para la recepción TCP:
+
+# Provides TCP syslog reception
+$ModLoad imtcp.so  
+$InputTCPServerRun 514
+TCP proporciona una entrega más confiable de los mensajes de registro remoto, pero UDP es compatible con una variedad más amplia de sistemas operativos y dispositivos de red.
+
+Importante
+El transporte TCP sin formato de los mensajes de syslog está bastante más implementado, aunque todavía no está estandarizado. La mayoría de las implementaciones actualmente usan el puerto TCP 514, que es el puerto rshd heredado. Si el sistema tiene el paquete rsh-server instalado y está usando el servicio rshd inseguro y antiguo, se producirá un conflicto con el puerto TCP 514 para la recepción de syslog de TCP sin formato. Configure el servidor de registro para que use un puerto diferente; para hacerlo, cambie la configuración de $InputTCPServerRun.
+
+Las reglas contenidas en /etc/rsyslog.conf están configuradas por defecto para admitir el registro de mensajes en un único host. Por lo tanto, ordena y agrupa los mensajes por instalación. Por ejemplo, los mensajes de correo se envían a /var/log/maillog mientras que los mensajes generados por el daemon crond se consolidan en /var/log/cron para facilitar la búsqueda de cada tipo de mensaje.
+
+Aunque el orden de los mensajes por instalación (facility) es ideal en un único host, produce un resultado inapropiado en un host de registro central debido a que mezcla los mensajes de diferentes hosts remotos. Por lo general, en un host de registro central es mejor que los mensajes de registro de sistemas remotos permanezcan por separado. Esta separación puede alcanzarse al definir nombres de archivos de registro dinámicos a través de la función de plantilla de rsyslog.
+
+Las plantillas se definen en /etc/rsyslog.conf y pueden utilizarse para generar reglas con nombres de archivos de registro dinámicos. Una definición de plantilla consta de la directiva $template, seguida del nombre de una plantilla y, luego, una cadena que representa el texto de la plantilla. El texto de la plantilla puede ser dinámico a través del uso de valores sustituidos de las propiedades de un mensaje de registro. Por ejemplo, para direccionar mensajes de syslog cron de diferentes sistemas a un host de registro central, utilice la siguiente plantilla para generar nombres de archivos de registro dinámicos en la propiedad HOSTNAME de cada mensaje:
+
+$template DynamicFile,"/var/log/loghost/%HOSTNAME%/cron.log"
+El nombre de plantilla puede hacer referencia al archivo dinámico creado a través de la definición de plantilla en una regla como la siguiente:
+
+cron.*   ?DynamicFile
+En sistemas que realizan un registro extremadamente detallado, es recomendable desactivar la sincronización del archivo de registro después de cada operación de lectura para mejorar el rendimiento. La sincronización de un archivo de registro después de cada registro puede omitirse al colocar el signo menos (-) como prefijo en el nombre del archivo de registro en una regla de registro. Sin embargo, la compensación del rendimiento mejorado crea la posibilidad de pérdida de datos de registro si el sistema colapsa inmediatamente después de un intento de escritura.
+
+A continuación se muestra otro ejemplo del uso de plantillas para generar nombres de archivos de registro dinámicos. En este ejemplo, los mensajes de registro remotos se ordenarán por su nombre de host y valores de instalación (facility) al hacer referencia a las propiedades HOSTNAME y syslogfacility-test. Los mensajes de registro se escribirán en los nombres de archivos de registro generados de manera dinámica, y no se realizará una sincronización después de la operación de escritura.
+
+$template DynamicFile,"/var/log/loghost/%HOSTNAME%/%syslogfacility-text%.log"
+*.*   -?DynamicFile
+Nota
+Puede encontrar una lista completa de propiedades de mensajes de syslog facilitada por rsyslog en la sección Propiedades disponibles de la página del manual rsyslog.conf(5).
+
+Una vez que se haya activado la recepción de syslog y el host haya creado las reglas deseadas para la separación de registros, reinicie el servicio rsyslog para que se apliquen los cambios de configuración. Además, agregue las reglas de firewall UDP o TCP para permitir el tráfico de syslog entrante y, luego, actualice firewalld.
+
+[root@loghost ~]# systemctl restart rsyslog
+[root@loghost ~]# firewall-cmd --add-port=514/udp --permanent
+[root@loghost ~]# firewall-cmd --add-port=514/tcp --permanent
+[root@loghost ~]# firewall-cmd --reload
+Cuando se crean nuevos archivos de registro, es posible que no se incluyan en el programa de rotación de registros existente del host de registro. Esto debe solucionarse para garantizar que los nuevos archivos de registro no alcancen tamaños incontrolables. Por ejemplo, para incluir nuevos archivos de registro de ejemplos anteriores en la rotación de registros, agregue la siguiente entrada a la lista de archivos de registro en el archivo de configuración /etc/logrotate.d/syslog.
+
+/var/log/loghost/*/*.log
+Redireccionamiento de registros al host de registro central
+Una vez que se configura el host de registro central para aceptar registros remotos, el servicio rsyslog puede configurarse en sistemas remotos para enviar registros al host de registro central. Para configurar una máquina a fin de que envíe registros a un servidor rsyslog remoto, agregue una línea a la sección de reglas en el archivo /etc/rsyslog.conf. En lugar del nombre del archivo, use la dirección IP del servidor rsyslog remoto. Para usar UDP, anexe la dirección IP con un solo signo @. Para usar TCP, anéxela con dos signos @ (@@).
+
+Por ejemplo, para que todos los mensajes de prioridad info o de prioridad más alta se envíen a loghost.example.com por medio de UDP, use la siguiente línea:
+
+*.info    @loghost.example.com
+Para que todos los mensajes se envíen a loghost.example.com por medio de TCP, use la siguiente línea:
+
+*.*    @@loghost.example.com
+Otra opción es que el nombre de host de registro se anexe con :PORT, donde PORT es el puerto que está usando el servidor remoto rsyslog. Si no se indica un puerto, se asume el puerto 514 de forma predeterminada.
+
+Una vez que haya agregado las reglas, reinicie el servicio rsyslog y envíe un mensaje de prueba con el comando logger:
+
+
+    [root@logclient ~]# 
+    
+      logger "Test from logclient"
+    
+  
+Verifique los registros en el servidor remoto para asegurarse de que se haya recibido el mensaje.
+
+References
+Para obtener más información, consulte las páginas del manual rsyslog.conf(5), rsyslogd(8) y logger(1).
+
+
+
 
 ===============================================================
 =                                                             =
 =                         SeccionIII                          =
-=           Uso de administración de configuración            =
+=            administración de configuración            =
 =                                                             =
 ===============================================================
 
