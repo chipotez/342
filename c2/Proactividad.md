@@ -407,12 +407,80 @@ Para obtener más información, consulte las páginas del manual rsyslog.conf(5)
 
 
 
-===============================================================
-=                                                             =
-=                         SeccionIII                          =
-=            administración de configuración            =
-=                                                             =
-===============================================================
+========================================================
+=                                                      =
+=                  SeccionIII                          =
+=           administración de configuración            =
+=                                                      =
+========================================================
+
+Soluciones de gestión de configuraciones
+A medida que crece la infraestructura de TI de una organización, muchos administradores descubren que el mantenimiento de las configuraciones del sistema se vuelven incontrolables. A menudo, este es el resultado de los administradores que gestionan la configuración de sus sistemas manualmente. A medida que crece la población del servidor de una organización, un enfoque manual de la configuración del sistema no solo no puede escalarse, sino que también se vuelve el principal punto de entrada de errores humanos, que impactan negativamente en la estabilidad y el funcionamiento del sistema.
+
+Una mejor alternativa al mantenimiento manual de la configuración del sistema es utilizar una herramienta de gestión de configuraciones. Incluso las herramientas de gestión de configuraciones simples pueden mejorar considerablemente la eficiencia y estabilidad operativas. Estas herramientas pueden acelerar enormemente la implementación de cambios de configuración en una gran cantidad de sistemas. Debido a que los cambios se realizan mediante programación y de modo automatizado, también se garantiza la precisión de los cambios.
+
+Un ejemplo de una herramienta de gestión de configuraciones es la función de Canal de configuración que se ofrece en Red Hat Satellite 5. Los canales de configuración de la red de Red Hat proporcionan una manera fácil de implementar archivos de configuración en un entorno empresarial. En lugar de realizar cambios del archivo de configuración en sistemas individuales, los administradores pueden realizar cambios en un archivo de configuración que se conserva en un Canal de configuración alojado en los servidores de Red Hat Satellite 5. Los cambios pueden implementarse en sistemas cliente suscritos al canal.
+
+En los últimos años, las herramientas simples para gestionar archivos de configuración fueron sustituidas por sistemas de gestión de configuraciones. Estos sistemas han crecido considerablemente en los últimos años y ahora hay muchas soluciones de código abierto disponibles para satisfacer las necesidades de gestión de configuraciones de una organización. Las siguientes son opciones de herramientas de gestión de configuraciones que están disponibles para los administradores.
+
+Ansible puede ser adecuado para las organizaciones con necesidades de gestión de configuraciones simples. Ansible está basado en el lenguaje de programación de Python. No tiene agente y se basa en SSH para implementar configuraciones en sistemas remotos.
+
+Chef y Puppet son soluciones de gestión de configuraciones pesadas que pueden adaptarse mejor a las empresas con requisitos de gestión de configuraciones exigentes. Ambas se basan en el lenguaje de programación de Ruby. Además, Chef y Puppet utilizan arquitectura del servidor cliente, por lo que las implementaciones típicas requieren la instalación de agentes en sistemas gestionados.
+
+Las última versión de Red Hat Satellite, Satellite 6, ofrece mucho más que la gestión de archivos de configuración. Incorpora el uso de Puppet y proporciona un sistema de gestión de configuraciones totalmente desarrollado para entornos empresariales.
+
+Uso de Puppet para la gestión de configuraciones
+Puppet permite que los administradores del sistema escriban infraestructura como código a través de lenguaje descriptivo para configurar máquinas, en lugar de utilizar scripts personalizados e individualizados para hacerlo. El lenguaje específico del dominio (DSL) de Puppet se utiliza para describir el estado de la máquina, y Puppet puede imponer este estado. Esto significa que si un administrador cambia un componente de la máquina por error, Puppet puede imponer el estado y devolver la máquina al estado deseado. Por lo tanto, el código de Puppet no solo puede utilizarse para configurar un sistema originalmente, sino que también puede utilizarse para mantener el estado del sistema acorde con la configuración deseada.
+
+El administrador de un sistema tradicional necesitaría registrarse en cada máquina para realizar tareas de administración en el sistema, pero esto no se escala bien. Quizás, el administrador del sistema crearía un script de configuración inicial (p. ej., un archivo kickstart) para una máquina, pero una vez que se haya ejecutado el script inicial, la máquina puede comenzar (y comenzará) a apartarse de esa configuración de script inicial. En el mejor de los casos, el administrador del sistema necesitaría revisar la máquina diariamente para verificar la configuración. En el peor de los casos, el administrador del sistema necesitaría descubrir por qué la máquina ya no funciona o volver a desarrollar la máquina y volver a implementar la configuración.
+
+Puppet se puede utilizar para establecer un estado deseado y hacer que la máquina coincida con ese estado. El administrador del sistema ya no necesita un script para la configuración inicial y un script separado (o peor aún, interacción humana) para la verificación del estado. Puppet administra la configuración del sistema y comprueba que el sistema esté en el estado deseado. Esto puede escalarse mucho mejor que el administrador de sistema tradicional que utiliza scripts individuales para cada sistema.
+
+Arquitectura de Puppet
+Puppet utiliza un modelo servidor/cliente. Al servidor se lo llama Puppet maestro. El Puppet maestro almacena instrucciones o manifiestos (código que contiene recursos y estados deseados) para los clientes. A los clientes se los llama nodos de Puppet y ejecutan el software del agente de Puppet. Por lo general, estos nodos ejecutan un daemon de Puppet (agent) que se utiliza para conectarse al Puppet maestro. Los nodos descargarán la instrucción asignada al nodo del Puppet maestro y aplicarán la configuración, en caso de ser necesaria.
+
+Una ejecución de Puppet comienza con el nodo de Puppet (no el Puppet maestro). Por defecto, el agente de Puppet inicia una ejecución de Puppet cada 30 minutos. Esta ejecución utiliza servicios de transmisión segura (SSL) para pasar datos de un lado a otro entre el nodo de Puppet y el Puppet maestro. El nodo se inicia al recopilar datos acerca del sistema a través del comando facter. El comando facter incluye información sobre dispositivos de bloque, sistemas de archivos, interfaz de la red, direcciones MAC, direcciones IP, memoria, sistema operativo, CPU, virtualización, etc. Estos datos se envían del nodo al Puppet maestro.
+
+Una vez que el Puppet maestro recibe los datos del nodo de Puppet, el Puppet maestro compila un catalog, que describe el estado deseado de cada recurso configurado para el nodo. El Puppet maestro verifica el nombre de host del nodo y lo vincula con la configuración específica del nodo (llamada clasificación de nodos) o usa la configuración predeterminada si el nodo no coincide. Este catálogo puede incluir información de dependencia para los recursos (p. ej., ¿Puppet debería instalar el paquete primero o iniciar el servicio primero?).
+
+Una vez que se compila el catálogo, el Puppet maestro envía el catálogo al nodo. El Puppet aplicará el catálogo en el nodo de Puppet y configurará todos los recursos definidos en el catálogo. Puppet es idempotentes; Puppet puede aplicar el catálogo a un nodo varias veces sin afectar el estado resultante.
+
+Una vez que el agente de Puppet aplica el catálogo al nodo, el nodo le informará al Puppet maestro los detalles de la ejecución. Este informe incluye información sobre los cambios que se realizaron en el nodo (si corresponde) y si la ejecución se completó correctamente. La infraestructura de informes de Puppet tiene una API, para que otras aplicaciones puedan descargar informes del Puppet maestro para almacenamiento o análisis adicional.
+
+Configuración de un cliente de Puppet
+Aunque Puppet puede ejecutarse en el modo independiente, donde todos los clientes de Puppet tienen módulos de Puppet localmente que se aplican al sistema, la mayoría de los administradores de sistemas descubren que Puppet funciona mejor con un Puppet maestro centralizado. El primer paso en la implementación de un cliente de Puppet es instalar el paquete puppet:
+
+
+    [root@demo ~]# 
+    
+      yum install -y puppet
+    
+  
+Una vez que se instala el paquete puppet, el cliente de Puppet debe configurarse con el nombre de host del Puppet maestro. El nombre de host del Puppet maestro debe colocarse en el archivo /etc/puppet/puppet.conf, en la sección [agent]. El siguiente fragmento muestra un ejemplo donde el Puppet maestro es denominado puppet.lab.example.com:
+
+[agent]
+    server = puppet.lab.example.com
+Nota
+Cuando no se define un Puppet maestro explícito, Puppet utiliza un nombre de host predeterminado de puppet. Si la ruta de búsqueda DNS incluye un host denominado puppet, este host se utilizará automáticamente.
+
+El paso final que se debe tomar en el cliente de Puppet es comenzar el servicio del agente de Puppet y configurarlo para que se ejecute en el momento del inicio.
+
+[root@demo ~]# systemctl start puppet.service
+[root@demo ~]# systemctl enable puppet.service
+ln -s '/usr/lib/systemd/system/puppet.service'
+ '/etc/systemd/system/multi-user.target.wants/puppet.service'
+ 
+Cuando el servicio del agente de Puppet se inicia por primera vez, generará un certificado de host y enviará una solicitud de firma de certificado al Puppet maestro. Una vez que se haya enviado la solicitud de certificado cliente, la solicitud para firmar el certificado cliente se puede ver en el Puppet maestro. Por defecto, la firma de certificados cliente se realiza manualmente en el Puppet maestro. Sin embargo, el Puppet maestro también puede configurarse para firmar automáticamente certificados cliente para que no se necesite una intervención humana para nuevos registros de clientes. Una vez que el Puppet maestro haya firmado el certificado, el agente de Puppet recibirá un catálogo y aplicará los cambios necesarios.
+
+Nota
+El paquete puppet viene con el repositorio de Satellite Tools 6.1.
+
+References
+Para obtener más información acerca de Puppet, consulte Introducción a Puppet
+
+Para obtener más información acerca de facter, consulte la página del manual facter(8).
+
+Para obtener más información acerca de la configuración de un cliente de Puppet, consulte Instalación de Puppet: Tareas posteriores a la instalación
 
 
 
@@ -458,3 +526,15 @@ https://events.static.linuxfound.org/sites/events/files/slides/Paul_Evans_PCP_R.
 
 User's and Administrator's Guide
 https://pcp.io/books/PCP_UAG/html-single/
+
+
+
+
+Seccion III
+Introducción a Puppet
+https://docs.puppet.com/puppet/3.6/index.html
+
+configuración de un cliente de Puppet
+https://docs.puppet.com/puppet/3.8/post_install.html
+
+
