@@ -144,77 +144,87 @@ En servera
 ===============================================================
 ===============================================================
 
-Ejercicio guiado: Uso de gestión de configuraciones	
 En este trabajo de laboratorio, configurará un sistema para la gestión de configuraciones a través de Puppet.
 
 Recursos
 Archivos	/etc/puppet/puppet.conf
-Máquinas	
-servera
-
-serverb
+Máquinas	 servera serverb
 
 Resultados
-Deberá poder instalar y configurar Puppet en un sistema y, luego, utilizar el agente de Puppet para configurar el servicio web en el sistema.
-
-Prepare sus sistemas para este ejercicio ejecutando el comando lab puppet setup en su máquina workstation. Esto configurará los repositorios necesarios en sus sistemas y configurará servera para que actúe como el Puppet maestro.
+Deberá poder instalar y configurar Puppet en un sistema y, luego, utilizar el agente de Puppet para configurar
+el servicio web en el sistema.
 
 [student@workstation ~]$ lab puppet setup
 Instale el software del agente de Puppet en serverb para implementarlo como el cliente de Puppet.
 
 [root@serverb ~]# yum install -y puppet
 Configure el agente de Puppet para señalar al Puppet maestro, servera.lab.example.com, al agregar la siguiente entrada a la sección agent del archivo de configuración /etc/puppet/puppet.conf.
-
 server = servera.lab.example.com
+
 Compruebe si el paquete httpd está instalado en este sistema.
-
 [root@serverb ~]# rpm -q httpd
-package httpd is not installed
+
 Habilite el servicio puppet para que el agente de Puppet se inicie en el arranque.
-
 [root@serverb ~]# systemctl enable puppet
-Created symlink from /etc/systemd/system/multi-user.target.wants/puppet.service to /usr/lib/systemd/system/puppet.service.
+
 En la ventana de un terminal separado, utilice el comando journalctl para monitorear las nuevas entradas de registro generadas por el agente de Puppet.
-
 [root@serverb ~]# journalctl -ef
+
 En la ventana del terminal original, inicie el servicio puppet. El sistema se registrará con el Puppet maestro y recuperará y aplicará su configuración.
-
 [root@serverb ~]# systemctl start puppet
-Observe las actividades del agente de Puppet al monitorear las nuevas entradas de registro que aparecen en el diario (journal) del sistema.
 
-Jan 12 23:13:42 serverb.lab.example.com systemd[1]: Started Puppet agent.
-Jan 12 23:13:42 serverb.lab.example.com systemd[1]: Starting Puppet agent...
-Jan 12 23:13:43 serverb.lab.example.com puppet-agent[1579]: Starting Puppet client version 3.6.2
-Jan 12 23:13:46 serverb.lab.example.com yum[1741]: Installed: apr-1.4.8-3.el7.x86_64
-Jan 12 23:13:46 serverb.lab.example.com yum[1741]: Installed: apr-util-1.5.2-6.el7.x86_64
-Jan 12 23:13:47 serverb.lab.example.com yum[1741]: Installed: httpd-tools-2.4.6-40.el7.x86_64
-Jan 12 23:13:47 serverb.lab.example.com yum[1741]: Installed: mailcap-2.1.41-2.el7.noarch
-Jan 12 23:13:47 serverb.lab.example.com useradd[1751]: new group: name=apache, GID=48
-Jan 12 23:13:47 serverb.lab.example.com useradd[1751]: new user: name=apache, UID=48, GID=48, home=/usr/share/httpd, shell=/sbin/nologin
-Jan 12 23:13:49 serverb.lab.example.com systemd[1]: Reloading.
-Jan 12 23:13:49 serverb.lab.example.com yum[1741]: Installed: httpd-2.4.6-40.el7.x86_64
-Jan 12 23:13:50 serverb.lab.example.com puppet-agent[1599]: (/Stage[main]/Main/Node[serverb.lab.example.com]/Package[httpd]/ensure) created
-Jan 12 23:13:50 serverb.lab.example.com systemd[1]: Starting The Apache HTTP Server...
-Jan 12 23:13:50 serverb.lab.example.com systemd[1]: Started The Apache HTTP Server.
-Jan 12 23:13:50 serverb.lab.example.com systemd[1]: Reloading.
-Jan 12 23:13:50 serverb.lab.example.com puppet-agent[1599]: (/Stage[main]/Main/Node[serverb.lab.example.com]/Service[httpd]/ensure) ensure changed 'stopped' to 'running'
-Jan 12 23:13:50 serverb.lab.example.com puppet-agent[1599]: Finished catalog run in 5.66 seconds
+
 Compruebe que la configuración aplicada resultó en la instalación de httpdy la habilitación y el inicio del servicio httpd.
-
 [root@serverb ~]# rpm -q httpd
-httpd-2.4.6-40.el7.x86_64
 [root@serverb ~]# systemctl is-active httpd
-active
 [root@serverb ~]# systemctl is-enabled httpd
-enabled
-Evalúe su trabajo y, luego, realice una limpieza en sus sistemas para el próximo ejercicio.
-
-Evalúe su trabajo.
 
 [student@workstation ~]$ lab puppet grade
-Realice una limpieza en sus sistemas para el próximo ejercicio.
-
 [student@workstation ~]$ lab puppet reset
 
+===============================================================                                                             =
+=                         SeccionIV                           =
+=     Ejercicio : seguimiento de cambios                    =
+=                                                             =
+===============================================================
+===============================================================
+===============================================================
+===============================================================
+
+Ejercicio guiado: Configuración de seguimiento de cambios	
+En este trabajo de laboratorio, configurará y realizará una auditoría del sistema a través del sistema de auditoría de Linus.
+
+Archivos:	/etc/audit/rules.d/audit.rules
+Máquinas: servera serverb
+
+Resultados
+Debería poder detectar cambios en el contenido y los atributos de archivos y directorios ubicados en un sistema de archivos.
+
+Compruebe que el daemon de auditoría esté habilitado y ejecutándose en servera.
+[root@servera ~]# systemctl status auditd
+
+Cree una regla para auditar los cambios en el contenido de los archivos y directorios ubicados en el directorio /etc. Para facilitar la identificación de registros creados por la regla, asocie los registros con la palabra clave etc_content.
+[root@servera ~]# auditctl -w /etc -p w -k etc_content
+
+Cree otra regla para auditar los cambios en los atributos de archivos y directorios ubicados en el directorio /etc. Para facilitar la identificación de registros creados por la regla, asocie los registros con la palabra clave etc_attribute.
+[root@servera ~]# auditctl -w /etc -p a -k etc_attribute
+
+Agregue las siguientes entradas al final de /etc/audit/rules.d/audit.rules para que las reglas de auditoría sean persistentes.
+-w /etc -p w -k etc_content
+-w /etc -p a -k etc_attribute
+
+Copie el contenido del archivo /etc/shadow en un nuevo archivo llamado /etc/shadow.copy.
+[root@servera ~]# cp /etc/shadow /etc/shadow.copy
+
+Cambie los permisos del archivo /etc/shadow.copy para que todos lo puedan leer.
+[root@servera ~]# chmod +r /etc/shadow.copy
+
+Utilice el comando ausearch para extraer los registros de auditoría para cambios en el contenido de archivos y directorios del directorio /etc.
+[root@servera ~]# ausearch -k etc_content
+
+Utilice el comando ausearch para extraer los registros de auditoría para cambios en los atributos de archivos y directorios del directorio /etc.
+[root@servera ~]# ausearch -k etc_attribute
 
 
+[student@workstation ~]$ lab audit grade
+[student@workstation ~]$ lab audit reset
