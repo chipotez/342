@@ -308,7 +308,7 @@ Realice una limpieza en sus sistemas para el próximo ejercicio.
 ===============================================================
 =                                                             =
 =                         SeccionII                           =
-=                   Monitoreo de Sistema                      =
+=             Configuración de registros remotos              =
 =                                                             =
 ===============================================================
 
@@ -316,7 +316,7 @@ Realice una limpieza en sus sistemas para el próximo ejercicio.
 ===============================================================
 =                                                             =
 =                         SeccionIII                          =
-=                   Monitoreo de Sistema                      =
+=           Uso de administración de configuración            =
 =                                                             =
 ===============================================================
 
@@ -325,7 +325,7 @@ Realice una limpieza en sus sistemas para el próximo ejercicio.
 ===============================================================
 =                                                             =
 =                         SeccionIV                           =
-=                   Monitoreo de Sistema                      =
+=        Configuración de seguimiento de cambios              =
 =                                                             =
 ===============================================================
 
